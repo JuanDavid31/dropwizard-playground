@@ -1,6 +1,8 @@
 package org.mobile;
 
 import io.dropwizard.Application;
+import io.dropwizard.db.PooledDataSourceFactory;
+import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.mobile.resources.HelloResource;
@@ -18,7 +20,12 @@ public class DropwizardPlayground extends Application<DropwizardPlaygroundConfig
 
     @Override
     public void initialize(final Bootstrap<DropwizardPlaygroundConfiguration> bootstrap) {
-
+        bootstrap.addBundle(new MigrationsBundle<DropwizardPlaygroundConfiguration>() {
+            @Override
+            public PooledDataSourceFactory getDataSourceFactory(DropwizardPlaygroundConfiguration conf) {
+                return conf.getDataSourceFactory();
+            }
+        });
     }
 
     @Override
