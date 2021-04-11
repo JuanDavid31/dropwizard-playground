@@ -12,9 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mobile.DropwizardPlayground;
 import org.mobile.DropwizardPlaygroundConfiguration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class DatabaseTest {
 
@@ -29,6 +26,13 @@ public class DatabaseTest {
 
     @BeforeAll
     static public void prepareDB() {
+        try {
+            dropDB();
+            runMigrations();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         JdbiFactory factory = new JdbiFactory();
         jdbi = factory.build(
             APP.getEnvironment(), APP.getConfiguration().getDataSourceFactory(), "postgres"
@@ -36,9 +40,19 @@ public class DatabaseTest {
         daoPersona = new DaoPersona(jdbi);
     }
 
+    private static void dropDB() throws Exception {
+        APP.getApplication().run("db", "drop-all", "--confirm-delete-everything", CONFIG_PATH);
+    }
+
+    private static void runMigrations() throws Exception {
+        APP.getApplication().run("db", "migrate", CONFIG_PATH);
+    }
+
     @Test
     public void daoIsNotNull() {
         Assertions.assertNotNull(jdbi);
         Assertions.assertNotNull(daoPersona);
     }
+
+
 }
