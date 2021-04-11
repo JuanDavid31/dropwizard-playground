@@ -11,6 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mobile.DropwizardPlayground;
 import org.mobile.DropwizardPlaygroundConfiguration;
+import org.mobile.entity.Person;
+import org.opentest4j.AssertionFailedError;
+
+import java.util.Optional;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(DropwizardExtensionsSupport.class)
 public class DatabaseTest {
@@ -22,7 +28,7 @@ public class DatabaseTest {
     );
 
     private static Jdbi jdbi;
-    private static DaoPersona daoPersona;
+    private static PersonDao personDao;
 
     @BeforeAll
     static public void prepareDB() {
@@ -37,7 +43,7 @@ public class DatabaseTest {
         jdbi = factory.build(
             APP.getEnvironment(), APP.getConfiguration().getDataSourceFactory(), "postgres"
         );
-        daoPersona = new DaoPersona(jdbi);
+        personDao = new PersonDao(jdbi);
     }
 
     private static void dropDB() throws Exception {
@@ -51,8 +57,19 @@ public class DatabaseTest {
     @Test
     public void daoIsNotNull() {
         Assertions.assertNotNull(jdbi);
-        Assertions.assertNotNull(daoPersona);
+        Assertions.assertNotNull(personDao);
     }
 
+    @Test
+    public void addValidPerson(){
+        Optional<Person> personOpt = personDao.addPerson(new Person("Juan"));
+        Assertions.assertTrue(personOpt.isPresent());
+        Assertions.assertNotEquals(0, personOpt.get().getId());
+    }
+
+    @Test
+    public void addInvalidNamePerson() {
+        Assertions.assertThrows(Exception.class, () -> personDao.addPerson(new Person()));
+    }
 
 }
